@@ -49,6 +49,7 @@ class AuthenticationController extends GetxController {
       try {
         await _storageService.saveAccessToken(session.accessToken);
         await _storageService.saveRefreshToken(session.refreshToken);
+        await _storageService.saveUserSession(session);
       } catch (_) {
         try {
           await _storageService.clearAuth();
