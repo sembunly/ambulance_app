@@ -15,7 +15,31 @@ class AppColors {
   static const textSecondary = Color(0xFF667085);
   static const textMuted = Color(0xFF98A2B3);
   static const error = Color(0xFFD92D20);
+  static const success = Color(0xFF039855);
+  static const primarySoft = Color(0xFFEAF3FF);
   static const onPrimary = surface;
+}
+
+class AppColorTokens {
+  const AppColorTokens();
+
+  Color get background => AppColors.background;
+  Color get surface => AppColors.surface;
+  Color get surface2 => AppColors.surface2;
+  Color get border => AppColors.border;
+  Color get border2 => AppColors.border2;
+  Color get textPrimary => AppColors.textPrimary;
+  Color get textSecondary => AppColors.textSecondary;
+  Color get textMuted => AppColors.textMuted;
+  Color get primary => AppColors.primary;
+  Color get primarySoft => AppColors.primarySoft;
+  Color get error => AppColors.error;
+  Color get success => AppColors.success;
+  Color get onPrimary => AppColors.onPrimary;
+}
+
+extension AppThemeContext on BuildContext {
+  AppColorTokens get appColors => const AppColorTokens();
 }
 
 class AppTheme {
