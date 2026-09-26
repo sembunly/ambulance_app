@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'app/dependency_injection.dart';
+import 'app/language/app_translations.dart';
 import 'app/routes/app_pages.dart';
 import 'app/theme/app_theme.dart';
 
@@ -24,6 +25,9 @@ class AmbulanceApp extends StatelessWidget {
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
       theme: AppTheme.light,
+      translations: AppTranslations(),
+      locale: AppTranslations.english,
+      fallbackLocale: AppTranslations.english,
     );
   }
 }
