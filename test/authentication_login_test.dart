@@ -1,4 +1,6 @@
 import 'package:ambulance_app/app/data/providers/api_provider.dart';
+import 'package:ambulance_app/app/data/models/login_response.dart';
+import 'package:ambulance_app/app/data/services/location_service.dart';
 import 'package:ambulance_app/app/data/services/storage_service.dart';
 import 'package:ambulance_app/main.dart';
 import 'package:dio/dio.dart';
@@ -14,8 +16,12 @@ void main() {
     Get.reset();
     dio = Dio(BaseOptions(baseUrl: 'http://example.test/ems-api'));
     storage = _MemoryStorageService();
-    Get.put<ApiProvider>(ApiProvider(client: dio), permanent: true);
     Get.put<StorageService>(storage, permanent: true);
+    Get.put<ApiProvider>(
+      ApiProvider(client: dio, storageService: storage),
+      permanent: true,
+    );
+    Get.put<LocationService>(_NoLocationService(), permanent: true);
   });
 
   tearDown(Get.reset);
@@ -40,6 +46,16 @@ void main() {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
+          if (options.method == 'GET') {
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {'body': <Object>[]},
+              ),
+            );
+            return;
+          }
           request = options;
           handler.resolve(
             Response(
@@ -70,7 +86,8 @@ void main() {
     expect(request?.data, {'phoneNumber': '012345678', 'password': 'secret'});
     expect(storage.accessToken, 'access-123');
     expect(storage.refreshToken, 'refresh-456');
-    expect(find.text('DashboardView is working'), findsOneWidget);
+    expect(storage.session?.userId, '7');
+    expect(find.byKey(const Key('dashboardScreen')), findsOneWidget);
   });
 
   testWidgets('401 shows a useful error and stays on login', (tester) async {
@@ -190,6 +207,7 @@ void main() {
 class _MemoryStorageService extends StorageService {
   String? accessToken;
   String? refreshToken;
+  LoginResponse? session;
   bool failRefreshWrite = false;
 
   @override
@@ -210,8 +228,22 @@ class _MemoryStorageService extends StorageService {
   Future<String?> getRefreshToken() async => refreshToken;
 
   @override
+  Future<void> saveUserSession(LoginResponse value) async {
+    session = value;
+  }
+
+  @override
+  Future<LoginResponse?> getUserSession() async => session;
+
+  @override
   Future<void> clearAuth() async {
     accessToken = null;
     refreshToken = null;
+    session = null;
   }
+}
+
+class _NoLocationService extends LocationService {
+  @override
+  Future<bool> isServiceEnabled() async => false;
 }
