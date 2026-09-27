@@ -1,6 +1,7 @@
 import 'package:ambulance_app/app/data/models/login_response.dart';
 import 'package:ambulance_app/app/data/providers/api_provider.dart';
 import 'package:ambulance_app/app/data/services/storage_service.dart';
+import 'package:ambulance_app/app/language/app_translations.dart';
 import 'package:ambulance_app/app/modules/profile/controllers/profile_controller.dart';
 import 'package:ambulance_app/app/modules/settings/controllers/settings_controller.dart';
 import 'package:ambulance_app/app/routes/app_pages.dart';
@@ -252,14 +253,23 @@ void main() {
     await tester.pumpWidget(const AmbulanceApp(initialRoute: Routes.settings));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Language'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('ភាសាខ្មែរ'));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+
     final controller = Get.find<SettingsController>();
-    await controller.setLanguage('km');
     await controller.setNotificationsEnabled(true);
     await tester.pumpAndSettle();
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('language'), 'km');
     expect(prefs.getBool('notification_enabled'), isTrue);
     expect(Get.locale?.languageCode, 'km');
+    expect(find.text('ការកំណត់'), findsOneWidget);
+    expect(find.text('ចំណូលចិត្ត'), findsOneWidget);
+    expect(find.text('ការជូនដំណឹង និងសំឡេង'), findsOneWidget);
+    expect(find.text('ភាសា'), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const Key('moreSignOutButton')));
     await tester.tap(find.byKey(const Key('moreSignOutButton')));
@@ -271,6 +281,60 @@ void main() {
     expect(find.byKey(const Key('loginScreen')), findsOneWidget);
     expect(prefs.getString('language'), 'km');
     expect(prefs.getBool('notification_enabled'), isTrue);
+  });
+
+  testWidgets('settings starts with the saved language', (tester) async {
+    SharedPreferences.setMockInitialValues({'language': 'km'});
+    final prefs = await SharedPreferences.getInstance();
+    Get.put<StorageService>(storage, permanent: true);
+    Get.put<ApiProvider>(api, permanent: true);
+
+    await tester.pumpWidget(
+      AmbulanceApp(
+        initialRoute: Routes.settings,
+        initialLocale: AppTranslations.localeFor(
+          prefs.getString(SettingsController.languageKey) ?? 'en',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(Get.locale?.languageCode, 'km');
+    expect(find.text('ការកំណត់'), findsOneWidget);
+    expect(find.text('ភាសា'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('ពាក្យសម្ងាត់'));
+    await tester.tap(find.text('ពាក្យសម្ងាត់'));
+    await tester.pumpAndSettle();
+    expect(find.text('ការកំណត់ពាក្យសម្ងាត់'), findsOneWidget);
+    expect(find.text('ពាក្យសម្ងាត់បច្ចុប្បន្ន'), findsOneWidget);
+  });
+
+  testWidgets('settings recovery contact stays editable with keyboard', (
+    tester,
+  ) async {
+    Get.put<StorageService>(storage, permanent: true);
+    Get.put<ApiProvider>(api, permanent: true);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(
+      const AmbulanceApp(initialRoute: Routes.passwordSettings),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Forgot Password'));
+    await tester.pumpAndSettle();
+
+    final contact = find.byKey(const Key('forgotPasswordContactField'));
+    await tester.tap(contact);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(tester.testTextInput.isVisible, isTrue);
+    await tester.enterText(contact, '012345678');
+    expect(find.text('012345678'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
 
