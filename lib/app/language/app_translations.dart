@@ -8,6 +8,9 @@ class AppTranslations extends Translations {
   static const english = Locale('en', 'US');
   static const khmer = Locale('km', 'KH');
 
+  static Locale localeFor(String language) =>
+      language == 'km' ? khmer : english;
+
   @override
   Map<String, Map<String, String>> get keys => {'en_US': en, 'km_KH': kh};
 
