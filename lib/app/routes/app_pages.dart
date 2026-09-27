@@ -4,6 +4,8 @@ import '../modules/ambulance/bindings/ambulance_binding.dart';
 import '../modules/ambulance/views/ambulance_view.dart';
 import '../modules/authentication/bindings/authentication_binding.dart';
 import '../modules/authentication/views/authentication_view.dart';
+import '../modules/authentication/views/forgot_password_view.dart';
+import '../modules/authentication/views/signup_view.dart';
 import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -44,6 +46,15 @@ class AppPages {
       name: _Paths.authentication,
       page: () => const AuthenticationView(),
       binding: AuthenticationBinding(),
+    ),
+    GetPage(
+      name: _Paths.signup,
+      page: () => const SignupView(),
+      binding: AuthenticationBinding(),
+    ),
+    GetPage(
+      name: _Paths.forgotPassword,
+      page: () => const ForgotPasswordView(),
     ),
     GetPage(
       name: _Paths.dashboard,
