@@ -15,14 +15,16 @@ void main() {
 }
 
 class AmbulanceApp extends StatelessWidget {
-  const AmbulanceApp({super.key});
+  const AmbulanceApp({super.key, this.initialRoute = AppPages.initial});
+
+  final String initialRoute;
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ambulance',
-      initialRoute: AppPages.initial,
+      initialRoute: initialRoute,
       getPages: AppPages.routes,
       theme: AppTheme.light,
       translations: AppTranslations(),
