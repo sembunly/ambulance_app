@@ -88,10 +88,15 @@ class DashboardData {
 }
 
 class DashboardLocation {
-  const DashboardLocation({required this.latitude, required this.longitude});
+  const DashboardLocation({
+    required this.latitude,
+    required this.longitude,
+    this.accuracy,
+  });
 
   final double latitude;
   final double longitude;
+  final double? accuracy;
 }
 
 class DashboardBooking {
