@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 final class MoreSettingsPalette {
   const MoreSettingsPalette({
@@ -64,7 +65,7 @@ class SettingsProfileHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Emergency Responder',
+                    'EMERGENCY_RESPONDER'.tr,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
