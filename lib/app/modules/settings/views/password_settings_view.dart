@@ -21,6 +21,7 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _contactController = TextEditingController();
+  final _contactFocus = FocusNode();
 
   PasswordSettingsMode _mode = PasswordSettingsMode.changePassword;
   bool _hideCurrentPassword = true;
@@ -37,6 +38,7 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     _contactController.dispose();
+    _contactFocus.dispose();
     super.dispose();
   }
 
@@ -57,7 +59,7 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
       );
       if (!mounted) return;
       _clearChangePasswordForm();
-      _showSuccess('Password updated successfully.');
+      _showSuccess('PASSWORD_UPDATED_SUCCESS'.tr);
       Get.back();
     } catch (error) {
       if (!mounted) return;
@@ -75,9 +77,7 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
     FocusScope.of(context).unfocus();
     if (!(_forgotPasswordFormKey.currentState?.validate() ?? false)) return;
 
-    setState(
-      () => _forgotPasswordError = 'Password recovery is not available yet.',
-    );
+    setState(() => _forgotPasswordError = 'PASSWORD_RECOVERY_UNAVAILABLE'.tr);
   }
 
   void _clearChangePasswordForm() {
@@ -118,15 +118,16 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
     final colors = context.appColors;
     return Scaffold(
       backgroundColor: colors.background,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text('Password Settings'),
+        title: Text('PASSWORD_SETTINGS'.tr),
         centerTitle: false,
         backgroundColor: colors.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           key: const Key('passwordSettingsBackButton'),
-          tooltip: 'Back',
+          tooltip: 'BACK'.tr,
           onPressed: _isBusy ? null : () => Get.back(),
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19),
         ),
@@ -137,6 +138,7 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -191,6 +193,7 @@ class _PasswordSettingsViewState extends State<PasswordSettingsView> {
                             key: const ValueKey('forgotPasswordForm'),
                             formKey: _forgotPasswordFormKey,
                             contactController: _contactController,
+                            contactFocus: _contactFocus,
                             isLoading: _isSubmittingForgotPassword,
                             errorMessage: _forgotPasswordError,
                             onSubmit: _submitForgotPassword,
@@ -241,7 +244,7 @@ class _HeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Secure your account',
+                  'SECURE_ACCOUNT'.tr,
                   style: TextStyle(
                     color: colorTokens.textPrimary,
                     fontSize: 18,
@@ -251,7 +254,7 @@ class _HeaderCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Change your password or request a reset using the contact tied to your account.',
+                  'SECURE_ACCOUNT_DESCRIPTION'.tr,
                   style: TextStyle(
                     color: colorTokens.textSecondary,
                     fontSize: 13,
@@ -277,16 +280,16 @@ class _ModeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     return SegmentedButton<PasswordSettingsMode>(
-      segments: const [
+      segments: [
         ButtonSegment<PasswordSettingsMode>(
           value: PasswordSettingsMode.changePassword,
-          label: Text('Change Password'),
-          icon: Icon(Icons.lock_reset_rounded),
+          label: Text('CHANGE_PASSWORD'.tr),
+          icon: const Icon(Icons.lock_reset_rounded),
         ),
         ButtonSegment<PasswordSettingsMode>(
           value: PasswordSettingsMode.forgotPassword,
-          label: Text('Forgot Password'),
-          icon: Icon(Icons.mark_email_read_outlined),
+          label: Text('FORGOT_PASSWORD'.tr),
+          icon: const Icon(Icons.mark_email_read_outlined),
         ),
       ],
       selected: <PasswordSettingsMode>{mode},
@@ -341,8 +344,8 @@ class _ChangePasswordForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _FormCard(
-      title: 'Change Password',
-      subtitle: 'Update the password you use to sign in to the app.',
+      title: 'CHANGE_PASSWORD'.tr,
+      subtitle: 'CHANGE_PASSWORD_DESCRIPTION'.tr,
       child: Form(
         key: formKey,
         child: Column(
@@ -351,8 +354,8 @@ class _ChangePasswordForm extends StatelessWidget {
             _PasswordField(
               key: const Key('currentPasswordField'),
               controller: currentPasswordController,
-              label: 'Current password',
-              hintText: 'Enter current password',
+              label: 'CURRENT_PASSWORD'.tr,
+              hintText: 'ENTER_CURRENT_PASSWORD'.tr,
               obscureText: hideCurrentPassword,
               isLoading: isLoading,
               textInputAction: TextInputAction.next,
@@ -360,7 +363,7 @@ class _ChangePasswordForm extends StatelessWidget {
               onToggleVisibility: onToggleCurrentPassword,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Current password is required';
+                  return 'CURRENT_PASSWORD_REQUIRED'.tr;
                 }
                 return null;
               },
@@ -369,8 +372,8 @@ class _ChangePasswordForm extends StatelessWidget {
             _PasswordField(
               key: const Key('newPasswordField'),
               controller: newPasswordController,
-              label: 'New password',
-              hintText: 'Create a new password',
+              label: 'NEW_PASSWORD'.tr,
+              hintText: 'CREATE_NEW_PASSWORD'.tr,
               obscureText: hideNewPassword,
               isLoading: isLoading,
               textInputAction: TextInputAction.next,
@@ -378,13 +381,13 @@ class _ChangePasswordForm extends StatelessWidget {
               onToggleVisibility: onToggleNewPassword,
               validator: (value) {
                 final password = value ?? '';
-                if (password.isEmpty) return 'New password is required';
+                if (password.isEmpty) return 'NEW_PASSWORD_REQUIRED'.tr;
                 if (password.length < 8) {
-                  return 'Password must be at least 8 characters';
+                  return 'PASSWORD_MIN_LENGTH'.tr;
                 }
                 if (!RegExp(r'[A-Za-z]').hasMatch(password) ||
                     !RegExp(r'\d').hasMatch(password)) {
-                  return 'Use at least one letter and one number';
+                  return 'PASSWORD_REQUIRES_LETTER_NUMBER'.tr;
                 }
                 return null;
               },
@@ -393,8 +396,8 @@ class _ChangePasswordForm extends StatelessWidget {
             _PasswordField(
               key: const Key('confirmNewPasswordField'),
               controller: confirmPasswordController,
-              label: 'Confirm new password',
-              hintText: 'Re-enter the new password',
+              label: 'CONFIRM_NEW_PASSWORD'.tr,
+              hintText: 'REENTER_NEW_PASSWORD'.tr,
               obscureText: hideConfirmPassword,
               isLoading: isLoading,
               textInputAction: TextInputAction.done,
@@ -405,17 +408,17 @@ class _ChangePasswordForm extends StatelessWidget {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please confirm your new password';
+                  return 'CONFIRM_NEW_PASSWORD_REQUIRED'.tr;
                 }
                 if (value != newPasswordController.text) {
-                  return 'Passwords do not match';
+                  return 'PASSWORDS_DO_NOT_MATCH'.tr;
                 }
                 return null;
               },
             ),
             const SizedBox(height: 8),
             Text(
-              'Use a strong password with at least 8 characters, one letter, and one number.',
+              'STRONG_PASSWORD_HINT'.tr,
               style: TextStyle(
                 color: context.appColors.textSecondary,
                 fontSize: 12.5,
@@ -434,7 +437,7 @@ class _ChangePasswordForm extends StatelessWidget {
             const SizedBox(height: 18),
             _ActionButton(
               key: const Key('savePasswordButton'),
-              label: 'Save Password',
+              label: 'SAVE_PASSWORD'.tr,
               isLoading: isLoading,
               onPressed: onSubmit,
             ),
@@ -450,6 +453,7 @@ class _ForgotPasswordForm extends StatelessWidget {
     super.key,
     required this.formKey,
     required this.contactController,
+    required this.contactFocus,
     required this.isLoading,
     required this.errorMessage,
     required this.onSubmit,
@@ -457,6 +461,7 @@ class _ForgotPasswordForm extends StatelessWidget {
 
   final GlobalKey<FormState> formKey;
   final TextEditingController contactController;
+  final FocusNode contactFocus;
   final bool isLoading;
   final String? errorMessage;
   final Future<void> Function() onSubmit;
@@ -464,22 +469,24 @@ class _ForgotPasswordForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _FormCard(
-      title: 'Forgot Password',
-      subtitle: 'Send an OTP or reset link to the contact on your account.',
+      title: 'FORGOT_PASSWORD'.tr,
+      subtitle: 'FORGOT_PASSWORD_DESCRIPTION'.tr,
       child: Form(
         key: formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _TextFieldLabel(
-              text: 'Email or phone number',
+              text: 'EMAIL_OR_PHONE_NUMBER'.tr,
               color: context.appColors.textPrimary,
             ),
             const SizedBox(height: 9),
             TextFormField(
               key: const Key('forgotPasswordContactField'),
               controller: contactController,
+              focusNode: contactFocus,
               enabled: !isLoading,
+              readOnly: false,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
               autofillHints: const [
@@ -489,24 +496,24 @@ class _ForgotPasswordForm extends StatelessWidget {
               onFieldSubmitted: (_) {
                 if (!isLoading) onSubmit();
               },
-              decoration: const InputDecoration(
-                hintText: 'Enter email or phone number',
-                prefixIcon: Icon(Icons.alternate_email_rounded),
+              decoration: InputDecoration(
+                hintText: 'ENTER_EMAIL_OR_PHONE_NUMBER'.tr,
+                prefixIcon: const Icon(Icons.alternate_email_rounded),
               ),
               validator: (value) {
                 final contact = value?.trim() ?? '';
                 if (contact.isEmpty) {
-                  return 'Email or phone number is required';
+                  return 'EMAIL_OR_PHONE_REQUIRED'.tr;
                 }
                 if (_looksLikeEmail(contact) || _looksLikePhone(contact)) {
                   return null;
                 }
-                return 'Enter a valid email address or phone number';
+                return 'INVALID_EMAIL_OR_PHONE'.tr;
               },
             ),
             const SizedBox(height: 10),
             Text(
-              'We’ll use this contact to send recovery instructions.',
+              'RECOVERY_INSTRUCTIONS_HINT'.tr,
               style: TextStyle(
                 color: context.appColors.textSecondary,
                 fontSize: 12.5,
@@ -525,7 +532,7 @@ class _ForgotPasswordForm extends StatelessWidget {
             const SizedBox(height: 18),
             _ActionButton(
               key: const Key('sendRecoveryButton'),
-              label: 'Send OTP / reset link',
+              label: 'SEND_RECOVERY_LINK'.tr,
               isLoading: isLoading,
               onPressed: onSubmit,
             ),
@@ -645,7 +652,9 @@ class _PasswordField extends StatelessWidget {
             hintText: hintText,
             prefixIcon: const Icon(Icons.lock_outline_rounded),
             suffixIcon: IconButton(
-              tooltip: obscureText ? 'Show $label' : 'Hide $label',
+              tooltip: obscureText
+                  ? 'SHOW_FIELD'.trParams({'field': label})
+                  : 'HIDE_FIELD'.trParams({'field': label}),
               onPressed: isLoading ? null : onToggleVisibility,
               icon: Icon(
                 obscureText
