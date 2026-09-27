@@ -5,6 +5,8 @@ abstract class Routes {
   static const home = _Paths.home;
   static const splash = _Paths.splash;
   static const authentication = _Paths.authentication;
+  static const signup = _Paths.signup;
+  static const forgotPassword = _Paths.forgotPassword;
   static const dashboard = _Paths.dashboard;
   static const ambulance = _Paths.ambulance;
   static const tracking = _Paths.tracking;
@@ -24,6 +26,8 @@ abstract class _Paths {
   static const home = '/home';
   static const splash = '/splash';
   static const authentication = '/authentication';
+  static const signup = '/authentication/signup';
+  static const forgotPassword = '/authentication/forgot-password';
   static const dashboard = '/dashboard';
   static const ambulance = '/ambulance';
   static const tracking = '/tracking';
