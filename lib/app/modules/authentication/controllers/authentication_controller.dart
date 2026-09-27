@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../config/app_config.dart';
 import '../../../data/models/login_request.dart';
 import '../../../data/models/login_response.dart';
+import '../../../data/models/signup_request.dart';
 import '../../../data/providers/api_provider.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../routes/app_pages.dart';
@@ -46,20 +47,7 @@ class AuthenticationController extends GetxController {
         throw const _LoginFailure('Invalid response from server.');
       }
 
-      try {
-        await _storageService.saveAccessToken(session.accessToken);
-        await _storageService.saveRefreshToken(session.refreshToken);
-        await _storageService.saveUserSession(session);
-      } catch (_) {
-        try {
-          await _storageService.clearAuth();
-        } catch (_) {
-          // Keep the original storage error visible to the user.
-        }
-        throw const _LoginFailure(
-          'Unable to save your session. Please try again.',
-        );
-      }
+      await _saveSession(session);
 
       user.value = session;
       succeeded = true;
@@ -76,6 +64,79 @@ class AuthenticationController extends GetxController {
     if (succeeded) Get.offAllNamed(Routes.DASHBOARD);
   }
 
+  // ── Signup ──────────────────────────────────────────────────────────────
+  Future<void> signup(
+    String fullName,
+    String phoneNumber,
+    String email,
+    String password, {
+    String gender = '',
+    String dateOfBirth = '',
+  }) async {
+    if (isLoading.value) return;
+
+    isLoading.value = true;
+    errorMessage.value = null;
+    var succeeded = false;
+
+    try {
+      final request = SignupRequest(
+        fullName: fullName.trim(),
+        phoneNumber: phoneNumber.trim(),
+        email: email.trim(),
+        password: password,
+        gender: gender.trim(),
+        dateOfBirth: dateOfBirth.trim(),
+      );
+      final response = await _apiProvider.post(
+        AppConfig.signup,
+        data: request.toJson(),
+      );
+      final json = _responseMap(response.data);
+      _validateEnvelope(json, isLogin: false);
+      final session = LoginResponse.fromJson(json);
+      if (session.accessToken.isEmpty) {
+        throw const _LoginFailure('Invalid response from server.');
+      }
+      await _saveSession(session);
+      user.value = session;
+      succeeded = true;
+    } on DioException catch (error) {
+      final data = error.response?.data;
+      errorMessage.value = data is Map
+          ? _serverMessage(_asMap(data)) ?? 'Unable to create account.'
+          : error.response == null
+          ? 'Check your internet connection.'
+          : 'Unable to create account.';
+    } on _LoginFailure catch (error) {
+      errorMessage.value = error.message;
+    } catch (_) {
+      errorMessage.value = 'Unable to create account. Please try again.';
+    } finally {
+      isLoading.value = false;
+    }
+
+    if (succeeded) Get.offAllNamed(Routes.DASHBOARD);
+  }
+
+  // ── Session storage ─────────────────────────────────────────────────────
+  Future<void> _saveSession(LoginResponse session) async {
+    try {
+      await _storageService.saveAccessToken(session.accessToken);
+      await _storageService.saveRefreshToken(session.refreshToken);
+      await _storageService.saveUserSession(session);
+    } catch (_) {
+      try {
+        await _storageService.clearAuth();
+      } catch (_) {
+        // Keep the original storage error visible to the user.
+      }
+      throw const _LoginFailure(
+        'Unable to save your session. Please try again.',
+      );
+    }
+  }
+
   Map<String, dynamic> _responseMap(Object? data) {
     if (data is Map<String, dynamic>) return data;
     if (data is Map) {
@@ -84,11 +145,11 @@ class AuthenticationController extends GetxController {
     throw const _LoginFailure('Invalid response from server.');
   }
 
-  void _validateEnvelope(Map<String, dynamic> json) {
+  void _validateEnvelope(Map<String, dynamic> json, {bool isLogin = true}) {
     final header = _asMap(json['header']);
     if (json['success'] != false && header['result'] != false) return;
 
-    if (_asInt(header['statusCode']) == 401) {
+    if (isLogin && _asInt(header['statusCode']) == 401) {
       throw const _LoginFailure('Incorrect phone number or password.');
     }
     throw _LoginFailure(_serverMessage(json) ?? 'Authentication failed.');
