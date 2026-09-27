@@ -24,6 +24,21 @@ class LocationService {
     return DashboardLocation(
       latitude: data.latitude,
       longitude: data.longitude,
+      accuracy: data.accuracy,
+    );
+  }
+
+  Stream<DashboardLocation> watchLocation({double distanceFilter = 1}) async* {
+    await _location.changeSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: distanceFilter,
+    );
+    yield* _location.onLocationChanged.map(
+      (data) => DashboardLocation(
+        latitude: data.latitude,
+        longitude: data.longitude,
+        accuracy: data.accuracy,
+      ),
     );
   }
 
