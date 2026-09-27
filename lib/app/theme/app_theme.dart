@@ -9,6 +9,7 @@ class AppColors {
   static const background = Color(0xFFF5F7FA);
   static const surface = Color(0xFFFFFFFF);
   static const surface2 = Color(0xFFF8FAFC);
+  static const surface3 = Color(0xFFEAF2FB);
   static const border = Color(0xFFE1E5EB);
   static const border2 = Color(0xFFC9D1DC);
   static const textPrimary = Color(0xFF172033);
@@ -16,6 +17,8 @@ class AppColors {
   static const textMuted = Color(0xFF98A2B3);
   static const error = Color(0xFFD92D20);
   static const success = Color(0xFF039855);
+  static const successSoft = Color(0xFFEAF7EE);
+  static const errorSoft = Color(0xFFFFE9E7);
   static const primarySoft = Color(0xFFEAF3FF);
   static const onPrimary = surface;
 }
@@ -26,6 +29,7 @@ class AppColorTokens {
   Color get background => AppColors.background;
   Color get surface => AppColors.surface;
   Color get surface2 => AppColors.surface2;
+  Color get surface3 => AppColors.surface3;
   Color get border => AppColors.border;
   Color get border2 => AppColors.border2;
   Color get textPrimary => AppColors.textPrimary;
@@ -35,6 +39,8 @@ class AppColorTokens {
   Color get primarySoft => AppColors.primarySoft;
   Color get error => AppColors.error;
   Color get success => AppColors.success;
+  Color get successSoft => AppColors.successSoft;
+  Color get errorSoft => AppColors.errorSoft;
   Color get onPrimary => AppColors.onPrimary;
 }
 
