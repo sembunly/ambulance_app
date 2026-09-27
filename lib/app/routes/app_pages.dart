@@ -16,6 +16,7 @@ import '../modules/profile/bindings/profile_binding.dart';
 import '../modules/profile/views/profile_view.dart';
 import '../modules/settings/bindings/settings_binding.dart';
 import '../modules/settings/views/settings_view.dart';
+import '../modules/settings/views/password_settings_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
 import '../modules/tracking/bindings/tracking_binding.dart';
@@ -72,6 +73,11 @@ class AppPages {
     GetPage(
       name: _Paths.settings,
       page: () => const SettingsView(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.passwordSettings,
+      page: () => const PasswordSettingsView(),
       binding: SettingsBinding(),
     ),
     GetPage(
