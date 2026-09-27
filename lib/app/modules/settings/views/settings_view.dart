@@ -125,13 +125,13 @@ class _SettingsViewState extends State<_SettingsView> {
                           children: [
                             const SettingsProfileHeader(),
                             const SizedBox(height: 32),
-                            const SettingsSectionLabel('Preferences'),
+                            SettingsSectionLabel('PREFERENCES'.tr),
                             const SizedBox(height: 10),
                             SettingsGroup(
                               children: [
                                 SettingsToggleRow(
                                   icon: Icons.notifications_none_rounded,
-                                  title: 'Notifications and sounds',
+                                  title: 'NOTIFICATIONS_AND_SOUNDS'.tr,
                                   value: notificationsEnabled,
                                   onChanged: widget
                                       .settingsController
@@ -140,7 +140,7 @@ class _SettingsViewState extends State<_SettingsView> {
                                 const SettingsDivider(),
                                 SettingsRow(
                                   icon: Icons.translate_rounded,
-                                  title: 'Language',
+                                  title: 'LANGUAGE'.tr,
                                   trailingValue: language == 'km'
                                       ? 'ភាសាខ្មែរ'
                                       : 'English',
@@ -149,13 +149,13 @@ class _SettingsViewState extends State<_SettingsView> {
                               ],
                             ),
                             const SizedBox(height: 27),
-                            const SettingsSectionLabel('Account'),
+                            SettingsSectionLabel('ACCOUNT'.tr),
                             const SizedBox(height: 10),
                             SettingsGroup(
                               children: [
                                 SettingsRow(
                                   icon: Icons.lock_outline_rounded,
-                                  title: 'Password',
+                                  title: 'PASSWORD'.tr,
                                   onTap: widget.onPassword,
                                 ),
                                 // const SettingsDivider(),
@@ -189,7 +189,7 @@ class _SettingsViewState extends State<_SettingsView> {
                                 SettingsRow(
                                   key: const Key('moreSignOutButton'),
                                   icon: Icons.logout_rounded,
-                                  title: 'Logout',
+                                  title: 'LOGOUT'.tr,
                                   onTap: widget.onLogout,
                                   danger: true,
                                   showChevron: false,
@@ -242,14 +242,14 @@ class _SettingsHeader extends StatelessWidget {
             left: 10,
             child: IconButton(
               key: const Key('settingsBackButton'),
-              tooltip: 'Back',
+              tooltip: 'BACK'.tr,
               onPressed: handleBack,
               color: palette.text,
               icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
             ),
           ),
           Text(
-            'Settings',
+            'SETTINGS'.tr,
             key: const Key('moreSettingsTitle'),
             style: TextStyle(
               color: palette.text,
