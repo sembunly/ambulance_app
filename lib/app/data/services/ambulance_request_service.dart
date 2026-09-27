@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../config/app_config.dart';
 import '../models/ambulance_request_model.dart';
 import '../models/hospital_model.dart';
+import 'hospital_service.dart';
 import '../providers/api_provider.dart';
 
 class BookingApiException implements Exception {
@@ -99,34 +100,13 @@ class AmbulanceRequestService {
     int page = 1,
     int rowsPerPage = 10,
   }) async {
-    final response = await _send(
-      () => _apiProvider.get(
-        AppConfig.hospitalsList,
-        queryParameters: <String, dynamic>{
-          'searchText': '',
-          'page': page,
-          'rowsPerPage': rowsPerPage,
-          'orderBy': '',
-          'status': 1,
-        },
-      ),
-      fallback: 'Unable to load nearby hospitals.',
-    );
-    _validateEnvelope(response);
-    final records = _findRecords(response);
-    final hospitals = records
-        .map(HospitalModel.fromJson)
-        .where((hospital) => hospital.displayName.isNotEmpty)
-        .toList(growable: false);
-    final total = _findTotal(response);
-    return HospitalPage(
-      hospitals: List<HospitalModel>.unmodifiable(hospitals),
-      page: page,
-      total: total,
-      hasMore: total == null
-          ? hospitals.length >= rowsPerPage
-          : page * rowsPerPage < total,
-    );
+    try {
+      return await HospitalService(
+        apiProvider: _apiProvider,
+      ).getHospitals(page: page, rowsPerPage: rowsPerPage);
+    } on HospitalApiException catch (error) {
+      throw BookingApiException(error.message, error.statusCode);
+    }
   }
 
   Future<Map<String, dynamic>> fetchDispatches({String userId = ''}) async {
@@ -182,66 +162,6 @@ class AmbulanceRequestService {
       message.isEmpty ? 'Unable to submit the ambulance request.' : message,
       statusCode,
     );
-  }
-
-  List<Map<String, dynamic>> _findRecords(Object? value) {
-    if (value is List) {
-      return value.map(_asMap).where((item) => item.isNotEmpty).toList();
-    }
-    final map = _asMap(value);
-    if (map.isEmpty) return const <Map<String, dynamic>>[];
-    for (final key in const <String>[
-      'hospitals',
-      'rows',
-      'records',
-      'content',
-      'items',
-      'results',
-      'list',
-      'data',
-      'body',
-    ]) {
-      if (!map.containsKey(key)) continue;
-      final result = _findRecords(map[key]);
-      if (result.isNotEmpty || map[key] is List) return result;
-    }
-    final looksLikeHospital = const <String>[
-      'hospitalName',
-      'hospitalNameKhmer',
-      'latitude',
-      'longitude',
-      'logoUrl',
-    ].any(map.containsKey);
-    return looksLikeHospital ? <Map<String, dynamic>>[map] : const [];
-  }
-
-  int? _findTotal(Map<String, dynamic> response) {
-    final candidates = <Map<String, dynamic>>[
-      response,
-      _asMap(response['body']),
-      _asMap(response['data']),
-      _asMap(response['pagination']),
-      _asMap(response['page']),
-      _asMap(_asMap(response['body'])['pagination']),
-      _asMap(_asMap(response['body'])['page']),
-      _asMap(_asMap(response['data'])['pagination']),
-      _asMap(_asMap(response['data'])['page']),
-    ];
-    for (final map in candidates) {
-      for (final key in const <String>[
-        'total',
-        'totalElements',
-        'totalRecords',
-        'recordsTotal',
-        'totalCount',
-      ]) {
-        final value = map[key];
-        if (value is num) return value.round();
-        final parsed = int.tryParse(value?.toString() ?? '');
-        if (parsed != null) return parsed;
-      }
-    }
-    return null;
   }
 
   // ── Helper Methods ─────────────────────────────────────────────────────────
