@@ -11,6 +11,7 @@ abstract class Routes {
   static const hospitals = _Paths.hospitals;
   static const profile = _Paths.profile;
   static const settings = _Paths.settings;
+  static const passwordSettings = _Paths.passwordSettings;
   static const notifications = _Paths.notifications;
   // ignore: constant_identifier_names
   static const AUTHENTICATION = _Paths.authentication;
@@ -29,5 +30,6 @@ abstract class _Paths {
   static const hospitals = '/hospitals';
   static const profile = '/profile';
   static const settings = '/settings';
+  static const passwordSettings = '/settings/password';
   static const notifications = '/notifications';
 }
