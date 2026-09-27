@@ -2,6 +2,7 @@ import 'package:ambulance_app/app/data/providers/api_provider.dart';
 import 'package:ambulance_app/app/data/models/login_response.dart';
 import 'package:ambulance_app/app/data/services/location_service.dart';
 import 'package:ambulance_app/app/data/services/storage_service.dart';
+import 'package:ambulance_app/app/routes/app_pages.dart';
 import 'package:ambulance_app/main.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,9 @@ void main() {
   tearDown(Get.reset);
 
   Future<void> enterCredentials(WidgetTester tester) async {
-    await tester.pumpWidget(const AmbulanceApp());
+    await tester.pumpWidget(
+      const AmbulanceApp(initialRoute: Routes.AUTHENTICATION),
+    );
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const Key('phoneNumberField')),
