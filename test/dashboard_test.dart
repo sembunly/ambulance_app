@@ -94,15 +94,21 @@ void main() {
   });
 
   test('accepts a root list as the old API client did', () async {
-    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
-      handler.resolve(Response(
-        requestOptions: options,
-        statusCode: 200,
-        data: [
-          {'dispatchId': '23', 'dispatchStatus': 'PENDING'},
-        ],
-      ));
-    }));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: [
+                {'dispatchId': '23', 'dispatchStatus': 'PENDING'},
+              ],
+            ),
+          );
+        },
+      ),
+    );
 
     await controller.loadBookings();
 
