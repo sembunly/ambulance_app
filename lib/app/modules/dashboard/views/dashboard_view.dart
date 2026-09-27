@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../../theme/app_theme.dart';
+import '../../../data/models/ambulance_request_model.dart';
+import '../../ambulance/bindings/ambulance_binding.dart';
+import '../../ambulance/views/booking_status_view.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/active_booking_card.dart';
 import '../widgets/greeting_location_card.dart';
@@ -67,7 +70,20 @@ class _DashboardViewState extends State<DashboardView> {
                           onRetry: controller.loadBookings,
                           onView: active == null
                               ? null
-                              : () => Get.toNamed(Routes.ambulance),
+                              : () => Get.to<void>(
+                                  () => BookingStatusView(
+                                    result: AmbulanceBookingResult(
+                                      id: active.id,
+                                      code: active.code,
+                                      status: active.status,
+                                    ),
+                                    draft: AmbulanceRequestDraft(
+                                      locationAddress: active.pickupAddress,
+                                    ),
+                                    openedFromDashboard: true,
+                                  ),
+                                  binding: AmbulanceBinding(),
+                                ),
                           onTrack: active?.canTrackAmbulance == true
                               ? () => Get.toNamed(Routes.tracking)
                               : null,
