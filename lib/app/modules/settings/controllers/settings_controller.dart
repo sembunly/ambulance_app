@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart' show Locale;
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../config/app_config.dart';
 import '../../../data/providers/api_provider.dart';
 import '../../../data/services/storage_service.dart';
-import '../../../language/app_translations.dart';
 import '../../../routes/app_pages.dart';
 
 enum SettingsStatus { initial, loading, success, error }
@@ -77,8 +77,7 @@ class SettingsController extends GetxController {
     errorMessage.value = null;
     try {
       await (await _prefs).setString(languageKey, language.value);
-      Get.locale = AppTranslations.localeFor(language.value);
-      Get.appUpdate();
+      await Get.updateLocale(Locale(language.value));
       status.value = SettingsStatus.success;
     } catch (_) {
       language.value = previous;
