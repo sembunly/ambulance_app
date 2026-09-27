@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../routes/app_pages.dart';
 import '../../../theme/app_theme.dart';
 import '../controllers/authentication_controller.dart';
 
@@ -15,48 +18,75 @@ class AuthenticationView extends GetView<AuthenticationController> {
       resizeToAvoidBottomInset: true,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final sheetTop = (constraints.maxHeight * 0.395).clamp(286.0, 390.0);
+          final height = constraints.maxHeight;
+          final keyboardOpen =
+              View.of(context).viewInsets.bottom > 0 ||
+              MediaQuery.viewInsetsOf(context).bottom > 0;
+          final largeText = MediaQuery.textScalerOf(context).scale(14) > 14.5;
+          final allowScroll = keyboardOpen || height < 820 || largeText;
+          final sheetTop = keyboardOpen
+              ? 160.0
+              : math.min(
+                  (height * 0.35).clamp(220.0, 330.0),
+                  math.max(220.0, height - 575),
+                );
           final horizontalPadding = constraints.maxWidth < 360 ? 20.0 : 28.0;
-          return SingleChildScrollView(
-            key: const Key('loginScrollView'),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(height: sheetTop + 34, child: const _LoginHero()),
-                  Transform.translate(
-                    offset: const Offset(0, -34),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(34),
-                        ),
+          final contentHeight = allowScroll
+              ? math.max(height, sheetTop + 575)
+              : height;
+          final content = SizedBox(
+            height: contentHeight,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: sheetTop + 34,
+                  child: _LoginHero(compactForKeyboard: keyboardOpen),
+                ),
+                Positioned(
+                  top: sheetTop,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(34),
                       ),
-                      padding: EdgeInsets.fromLTRB(
-                        horizontalPadding,
-                        32,
-                        horizontalPadding,
-                        34,
-                      ),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 570),
-                          child: Obx(
-                            () => _LoginForm(
-                              controller: controller,
-                              isLoading: controller.isLoading.value,
-                              errorMessage: controller.errorMessage.value,
-                            ),
+                    ),
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      32,
+                      horizontalPadding,
+                      34,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 570),
+                        child: Obx(
+                          () => _LoginForm(
+                            controller: controller,
+                            isLoading: controller.isLoading.value,
+                            errorMessage: controller.errorMessage.value,
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          );
+          return SingleChildScrollView(
+            key: const Key('loginScrollView'),
+            physics: allowScroll
+                ? const ClampingScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: content,
           );
         },
       ),
@@ -65,7 +95,9 @@ class AuthenticationView extends GetView<AuthenticationController> {
 }
 
 class _LoginHero extends StatelessWidget {
-  const _LoginHero();
+  const _LoginHero({required this.compactForKeyboard});
+
+  final bool compactForKeyboard;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +119,28 @@ class _LoginHero extends StatelessWidget {
           bottom: false,
           child: LayoutBuilder(
             builder: (context, constraints) {
+              if (compactForKeyboard) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
+                  child: Row(
+                    children: [
+                      const _MedicalLogo(size: 60),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          'Ambulance Booking',
+                          key: Key('loginTitle'),
+                          style: TextStyle(
+                            color: AppColors.onPrimary,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
               final compact = constraints.maxHeight < 330;
               return Padding(
                 padding: EdgeInsets.fromLTRB(
@@ -212,6 +266,7 @@ class _LoginFormState extends State<_LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final compactForError = widget.errorMessage != null;
     return Form(
       key: _formKey,
       child: Column(
@@ -232,7 +287,7 @@ class _LoginFormState extends State<_LoginForm> {
                 ? 'Phone number is required'
                 : null,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: compactForError ? 16 : 24),
           const _Label('Password'),
           const SizedBox(height: 9),
           TextFormField(
@@ -276,12 +331,14 @@ class _LoginFormState extends State<_LoginForm> {
               ),
             ),
           ],
-          const SizedBox(height: 8),
+          SizedBox(height: compactForError ? 4 : 8),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               key: const Key('forgotPasswordButton'),
-              onPressed: null,
+              onPressed: widget.isLoading
+                  ? null
+                  : () => Get.toNamed(Routes.forgotPassword),
               style: TextButton.styleFrom(
                 minimumSize: const Size(0, 34),
                 padding: EdgeInsets.zero,
@@ -293,7 +350,7 @@ class _LoginFormState extends State<_LoginForm> {
               ),
             ),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: compactForError ? 16 : 22),
           DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -343,9 +400,9 @@ class _LoginFormState extends State<_LoginForm> {
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          SizedBox(height: compactForError ? 14 : 28),
           const _SocialDivider(),
-          const SizedBox(height: 22),
+          SizedBox(height: compactForError ? 10 : 22),
           SizedBox(
             height: 52,
             child: OutlinedButton(
@@ -382,7 +439,9 @@ class _LoginFormState extends State<_LoginForm> {
               ),
               TextButton(
                 key: const Key('loginSignupButton'),
-                onPressed: null,
+                onPressed: widget.isLoading
+                    ? null
+                    : () => Get.toNamed(Routes.signup),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 30),
                   padding: const EdgeInsets.symmetric(horizontal: 1),
